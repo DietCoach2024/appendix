@@ -1,0 +1,5 @@
+
+dietcoach-data-analysis-env/
+data_analysis/__pycache__
+data_analysis/Data/
+.DS_Store
