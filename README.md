@@ -1,6 +1,6 @@
-# Appendix for CHI submission
+# Appendix for DietCoach submission
 
-This appendix contains materials for our CHI submission "DietCoach: Development and Dietitian Evaluation of a Digital Dietary Counseling Platform".
+This appendix contains materials for our submission "DietCoach: Design, Development, and Expert Evaluation of a Digital Dietary Counseling Platform".
 
 It contains:
 
