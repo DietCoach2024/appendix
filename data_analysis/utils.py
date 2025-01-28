@@ -42,8 +42,8 @@ def get_column_stats(df, column):
     
 
 def rename_evaluation_survey_columns(df, is_initial_session):
+    df = df.copy()
     is_responses_to_be_renamed_dict = {
-                'Studien-E-Mail': 'email',
                 'Alter': 'age', 
                 'Geschlecht': 'gender',
                 'Arbeitserfahrung als ErnährungsberaterIn (in Jahren)':'years_of_experience',
@@ -96,13 +96,14 @@ def rename_evaluation_survey_columns(df, is_initial_session):
     else:
         to_be_renamed_dict = {**is_responses_to_be_renamed_dict, **additional_fs_to_be_renamed_ls}
     df = df.rename(columns=to_be_renamed_dict)
-    df = df[to_be_renamed_dict.values()]
+    df = df[list(to_be_renamed_dict.values()) + ['institution', 'email']]
     
     return df
 
 
 
 def map_likert_to_numbers(df, is_initial_session):
+    df = df.copy()
     #map likert scales to numebrs
     five_likert_mapping = {
         'Stimme überhaupt nicht zu': 1,
@@ -120,6 +121,14 @@ def map_likert_to_numbers(df, is_initial_session):
         'Stimme zu': 5,
         'Stimme eher zu': 6,
         'Stimme völlig zu': 7
+    }
+
+    patient_perc_mapping = {
+        '0-20% ': 1,
+        '21-40%': 2,
+        '41-60%': 3,
+        '61-80%': 4,
+        '81-100%': 5
     }
 
     positive_sus_columns = ['sus_frequent_use', 'sus_easy_to_operate', 
@@ -142,7 +151,6 @@ def map_likert_to_numbers(df, is_initial_session):
         other_columns = ['increase_patient_food_understanding',
                      'improve_nutrition_care_quality',
                      'better_achieve_health_outcomes',
-                     'perc_patients_can_benefit',
                      'multi_person_household', 
                      'required_use_of_customer_card',
                      'fpd_only',
@@ -153,10 +161,12 @@ def map_likert_to_numbers(df, is_initial_session):
                      'valuable_compared_to_other_tools',
                      'promote_cost_savings',
                      'price_per_patient_per_month']
-
+        #special mapping for perc_patients_can_benefit
+        df.perc_patients_can_benefit = df.perc_patients_can_benefit.map(patient_perc_mapping)
+        
         for col in positive_sus_columns + negative_sus_columns + other_columns:
             df[col] = df[col].map(five_likert_mapping)
-            
+
     for col in columns_to_seven_likert_mapping:
         df[col] = df[col].map(seven_likert_mapping)
     return df
@@ -174,9 +184,10 @@ def calculate_sus(row):
     return 2.5 * (positive_sus + negative_sus)
 
 def calculate_aggregated_metrics(df):
+    df = df.copy()
     df['sus'] = df.apply(calculate_sus, axis=1)
-    df['performance_expentancy'] = df[['useful', 'fast_to_finish_tasks', 'improve_productivity']].mean(axis=1)
-    df['effort_expentancy'] = df[['easy_to_learn', 'clear_interaction', 'easy_to_use', 'easy_to_use_skillfully']].mean(axis=1)
+    df['performance_expectancy'] = df[['useful', 'fast_to_finish_tasks', 'improve_productivity']].mean(axis=1)
+    df['effort_expectancy'] = df[['easy_to_learn', 'clear_interaction', 'easy_to_use', 'easy_to_use_skillfully']].mean(axis=1)
     df['facilitating_conditions'] = df[['resources_to_use', 'knowledge_to_use', 'tech_compatibility']].mean(axis=1)
     df['behavioral_intention'] = df[['use_in_future', 'use_at_work', 'use_frequently']].mean(axis=1)
     df['hedonic_motivation'] = df[['fun_to_use', 'comfortable_to_use', 'entertaining_to_use']].mean(axis=1)
